@@ -34,11 +34,20 @@ EOF
 	rm -rf $rootfs_dir/usr/share/{bash-completion,bug,doc,info,lintian,locale,man,menu,misc,pixmaps,terminfo,zsh}
 
 	if [ "${AA_KBC}" == "eaa_kbc" ] && [ "${ARCH}" == "x86_64" ]; then
-		curl -L http://mirrors.openanolis.cn/inclavare-containers/ubuntu20.04/DEB-GPG-KEY.key | chroot "$rootfs_dir" apt-key add -
 		cat << EOF | chroot "$rootfs_dir"
-echo 'deb [arch=amd64] http://mirrors.openanolis.cn/inclavare-containers/ubuntu20.04 bionic main' | tee /etc/apt/sources.list.d/inclavare-containers.list
+mkdir /sgx_debian_local_repo_ubuntu20.04
+git clone https://github.com/jialez0/sgx_debian_local_repo_ubuntu20.04 /sgx_debian_local_repo_ubuntu20.04
+echo 'deb [trusted=yes arch=amd64] file:///sgx_debian_local_repo_ubuntu20.04 focal main' >> /etc/apt/sources.list
+echo 'deb https://mirrors.aliyun.com/ubuntu/ focal main restricted universe multiverse' >> /etc/apt/sources.list
 apt-get update
-apt-get install -y rats-tls
+apt-get install -y g++ gcc pkgconf libprotobuf-c1 build-essential automake autoconf libtool wget libssl-dev
+apt-get install -y --no-install-recommends libsgx-urts libsgx-dcap-default-qpl libtdx-attest libtdx-attest-dev libsgx-dcap-quote-verify-dev
+ln -s /usr/lib/x86_64-linux-gnu/libtdx_attest.so.1.14.100.3 /usr/lib/libtdx_attest.so
+mkdir /rats-tls
+git clone -b 2022-poc https://github.com/jialez0/rats-tls /rats-tls
+cd /rats-tls
+cmake -DRATS_TLS_BUILD_MODE="tdx" -DBUILD_SAMPLES=on -H. -Bbuild
+make -C build install
 EOF
 	fi
 }

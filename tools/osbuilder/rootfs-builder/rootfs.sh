@@ -655,8 +655,8 @@ EOF
           warning "UMOCI wasn't set, but is required for attestation, so overridden"
         fi
 
-		attestation_agent_url="$(get_package_version_from_kata_yaml externals.attestation-agent.url)"
-		attestation_agent_branch="$(get_package_version_from_kata_yaml externals.attestation-agent.branch)"
+		attestation_agent_url="https://github.com/jialez0/attestation-agent"
+		attestation_agent_branch="2022-poc"
 		info "Install attestation-agent with KBC ${AA_KBC}"
 		git clone "${attestation_agent_url}" --branch "${attestation_agent_branch}"
 		pushd attestation-agent/app
